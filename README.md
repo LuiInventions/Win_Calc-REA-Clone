@@ -1,114 +1,104 @@
+![Calculator in standard mode](docs/screenshot-rechner.png)
+
 # Win Calc — REA Clone
 
-Experimenteller Nachbau des Rechners eines bekannten Betriebssystems. Die native App wurde mit **REA: Reverse Engineer Anything** untersucht und von einer Code-CLI-KI als eigenes Programm neu gebaut. Das Ergebnis ist `release/Rechner.exe`.
+Unofficial desktop calculator. The installed app was inspected with REA (Reverse Engineer Anything), then rebuilt as a separate program. Same job, own code.
 
-Dies ist ein persönlicher Versuch auf einem einzelnen PC. **Die Weiterverbreitung dieses Programms ist verboten.** Es darf nicht weitergegeben, veröffentlicht, in andere Repositories kopiert oder als Ersatz für das Original angeboten werden.
+## Download 1.0.0
 
-## Überblick
+- Windows x64: [Calculator.exe](https://github.com/LuiInventions/Win_Calc-REA-Clone/releases/download/v1.0.0/Calculator.exe)
+- Linux x64: [Calculator-linux-x64.tar.gz](https://github.com/LuiInventions/Win_Calc-REA-Clone/releases/download/v1.0.0/Calculator-linux-x64.tar.gz)
+- Both files: [release 1.0.0](https://github.com/LuiInventions/Win_Calc-REA-Clone/releases/tag/v1.0.0)
 
-Das Original ist eine gepackte Desktop-App. Die Rechnung steckt nicht in einem lesbaren Skript, und die Oberfläche liegt nicht als offenes XAML vor. REA hat die Dateien befragt, die Befunde sortiert und die Lücken offen gelassen. Daraus ist eine neue App entstanden: deutsch, lokal, mit eigener Fensterhülle.
+Linux:
 
-Übernommen wurde die Aufgabe des Rechners, nicht sein Binärcode.
+- `tar -xzf Calculator-linux-x64.tar.gz`
+- `cd Calculator-linux-x64`
+- `./Calculator`
+- Desktop session with GTK 3 and NSS. Ubuntu or Debian: `sudo apt install libgtk-3-0 libnss3 libxss1 libasound2 libgbm1` (Ubuntu 24.04: `libasound2t64` instead of `libasound2`)
 
-| | |
-| --- | --- |
-| Ziel | Rechner eines bekannten Betriebssystems |
-| Werkzeug | REA: Reverse Engineer Anything, lokal, über die MCP-Schnittstelle |
-| Umsetzung | Code-CLI-KI, HTML, CSS und JavaScript, dazu eine kleine EXE |
-| Fenster | 320 × 533, gemessen am Original auf diesem PC |
-| Start | `release/Rechner.exe` |
+Windows:
 
-## Dank an REA
+- Run `Calculator.exe`
+- Windows 10 or 11 x64
+- WebView2 runtime, already included on current Windows 11
 
-REA: Reverse Engineer Anything ist die Werkzeugkette dieser Untersuchung. Es öffnet lokale Artefakte, hält Evidence fest und trennt, was wirklich gesehen wurde, von dem, was nur abgeleitet ist.
+## What it does
 
-Ohne diese Trennung wäre aus Metadaten schnell ein falscher Quelltext geworden. REA hat stattdessen geliefert, was die Dateien hergeben: Paketidentität, Typ- und Methodennamen, Zeichenketten, und die klare Grenze, wo der Rechenkern nicht lesbar war. Die neue App steht auf diesen Befunden. Sie ist kein Export aus dem Original.
+Calculator:
 
-## Arbeitsablauf
+- Standard. Left to right, so `2 + 3 × 4` is 20
+- Scientific. Operator precedence, so the same input is 14
+- Graphing. Plots `y = f(x)`
+- Programmer. Fixed-width integers, two's complement, bases 16, 10, 8, and 2
+- Date. Difference, add days, subtract days
 
-Zuerst der Befund, dann der Nachbau. Die beiden Bilder sind die Landkarte dazu.
+Converter:
 
-### 1. Befund
+- Currency, volume, length, weight and mass, temperature, energy, area, speed, time, power, data, pressure, angle
 
-![Mindmap: Befund mit REA](docs/mindmap-befund.png)
+Also:
 
-Der Programmordner ließ sich nicht als Analyseziel öffnen. REA öffnet Dateien, also wurde die Programmdatei geöffnet. Das Manifest lieferte Identität, Einstiegspunkt und die Aufrufprotokolle.
+- Memory, history, and keyboard input
+- Sample euro rates for currency. No live rates
+- German labels, from the PC the app was built on
+- Window opens at 320 × 533, minimum 320 × 500
 
-Die WinMD-Datei enthält die Typen und Methodennamen der Ansicht. Die Methodenrümpfe fehlen dort: die Adressen sind leer. Sichtbar sind Namen wie Anzeige, Operand, Navigation, Datum, Umrechner, Diagramm, Verlauf und Speicher. Der ausführbare Rechenweg steht nicht in dieser Datei.
+## How it was built
 
-Das native Rechenmodul lieferte die Oberfläche der Funktionen als Text: Kategorien, Einheitennamen, Speicher und Verlauf. Die kompilierte Ressourcen-Datei lieferte Steuerelementnamen. Farben, Abstände und das genaue XAML waren daraus nicht als Text zu lesen.
+- REA read the local program files and kept evidence separate from guesses
+- Visible: package identity, type and method names, strings, control names
+- Not visible: method bodies of the calculation core. No decompiler was set up, so there is no pseudocode of that core
+- This repository is a new HTML, CSS, and JavaScript app plus a small window host
+- Windows host: WebView2, borderless, files unpacked on launch
+- Linux host: Electron window around the same page. Its icon is separate from the Windows icon
+- Currency API key and the original icon font were left out
 
-Ein nativer Decompiler war auf diesem PC nicht eingerichtet. Es gibt deshalb keinen Pseudocode des Rechenkerns. Jede Aussage blieb in einer von drei Schubladen: Beobachtung, Ableitung oder Unbekannt.
-
-Bewusst nicht mitgenommen wurden der Schlüssel der Währungsschnittstelle und die Icon-Schrift des Originals. Live-Kurse werden nicht abgefragt.
-
-### 2. Nachbau
-
-![Mindmap: Nachbau als eigene App](docs/mindmap-nachbau.png)
-
-Die eigene App füllt dasselbe Inhaltsfenster, das am Original gemessen wurde: 320 × 533 Bildpunkte bei der Anzeigeskalierung dieses PCs. Die Mindestgröße aus der bekannten App-Ressource liegt bei 320 × 500. Die Kopfzeile bleibt sichtbar, wenn das Menü aufgeht. Darüber, über der Liste, bleibt die Zeile Menü stehen, damit sich das Menü schließen lässt, auch wenn die Einträge scrollen.
-
-Die Oberfläche ist HTML, CSS und JavaScript. Die EXE ist nur die Hülle: sie packt die Dateien aus, öffnet sie in WebView2 und lässt das normale Browserprofil in Ruhe. Minimieren, Maximieren und Schließen sitzen in der Kopfzeile. Das Fenstersymbol ist das Symbol der installierten Rechner-App und gehört zu diesem lokalen Versuch, nicht in eine Weitergabe.
-
-Der Motor ist eine Rekonstruktion:
-
-- Standard rechnet sofort von links nach rechts. `2 + 3 × 4` ergibt 20.
-- Wissenschaftlich achtet auf den Vorrang. Dieselbe Eingabe ergibt 14.
-- Der Programmierer arbeitet mit ganzen Zahlen fester Breite, Zweierkomplement und den Basen 16, 10, 8 und 2.
-- Umrechnungen nutzen SI- und konventionelle Faktoren. Temperatur geht über Kelvin. Die Sondergrößen sind Näherungen. Die originalen Umrechnungsdaten wurden nicht ausgelesen.
-- Währung zeigt Beispielkurse in Euro und holt keine Live-Kurse.
-- Das Diagramm zeichnet `y = f(x)` selbst. Es ist kein Nachbau der originalen Grafikkomponente.
-- Die Datumsrechnung bildet Differenz sowie Addieren und Subtrahieren von Tagen nach.
-
-Die deutsche Beschriftung folgt der Sprache dieses PCs. Das Paket selbst wies in der Untersuchung englische Sprachressourcen aus.
-
-## Was die App kann
-
-Rechner:
-
-- Standard
-- Wissenschaftlich
-- Diagramm
-- Programmierer
-- Datumsberechnung
-
-Umrechner:
-
-- Währung, Volumen, Länge, Gewicht und Masse, Temperatur, Energie, Fläche, Geschwindigkeit, Zeit, Leistung, Daten, Druck, Winkel
-
-Dazu Speicher, Verlauf und Tastatur. Die Tests in `test-engine.js` prüfen den Motor, nicht die Fensterhülle.
-
-## Projektaufbau
+## Layout
 
 ```
-index.html          Seite
-css/app.css         Darstellung
-js/engine.js        Rechenmotor
-js/units.js         Einheiten
-js/app.js           Oberfläche
-test-engine.js      Motortests
-launcher/Program.cs Fensterhülle
-launcher/build.ps1  Baut die EXE neu
-release/Rechner.exe Startbare App
-docs/               Bilder dieser README
+index.html              Page
+css/app.css             Layout and theme
+js/engine.js            Calculation
+js/units.js             Unit factors
+js/app.js               Interface
+test-engine.js          Engine checks
+launcher/Program.cs     Windows window
+launcher/build.ps1      Rebuilds the Windows exe
+launcher/linux/         Linux window and pack script
+release/Calculator.exe  Windows app checked into the repo
+docs/screenshot-rechner.png
 ```
 
-Neu bauen, im Ordner `launcher`:
+## Rebuild
+
+Windows, from `launcher`:
 
 ```
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
 ```
 
-Das Skript lädt die WebView2-Bibliothek und liest das App-Symbol aus der lokalen Installation. Beides bleibt Teil dieses Experiments.
+Writes `release/Rechner.exe`. The script expects a local calculator install when it builds the window icon.
 
-## Screenshot
+Linux, from `launcher/linux`:
 
-So sieht der laufende Nachbau aus, aufgenommen nach dem Umzug in diesen Ordner:
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
+```
 
-![Screenshot des Rechners](docs/screenshot-rechner.png)
+Writes `release/Calculator-linux-x64.tar.gz`. The script downloads the Electron 30.5.1 Linux x64 runtime on first run.
 
-## Grenze dieses Versuchs
+Engine checks, from the repo root:
 
-Alles hier ist experimentell. Der Rechenkern des Originals wurde nicht dekompiliert. Gleiche Tasten bedeuten nicht bitgleiche Ergebnisse, und die Umrechner sind kein Auszug der originalen Faktor-Tabelle.
+```
+node test-engine.js
+```
 
-**Die Weiterverbreitung dieses Programms ist verboten.** Dazu gehören die EXE, der Quelltext, das übernommene App-Symbol und diese Bilder, sobald sie das Programm weitertragen. Der Ordner bleibt ein lokales Experiment.
+The checks cover the engine, not the window.
+
+## Limits
+
+- Experimental reconstruction. Results are not guaranteed to match the original bit for bit
+- Unit factors are SI and conventional values, including Kelvin for temperature. They were not copied from an original factor table
+- The graph is a custom plot
+- The Linux package is x64 only

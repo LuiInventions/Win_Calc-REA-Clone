@@ -88,6 +88,28 @@ html.maximized .caption [data-act="win:max"]::before {
   font-family: "Segoe MDL2 Assets", "Segoe UI Symbol", sans-serif;
 }
 
+html.linux .caption .cap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0;
+}
+html.linux .caption [data-act="win:min"]::before,
+html.linux .caption [data-act="win:max"]::before,
+html.linux .caption [data-act="win:close"]::before {
+  font-family: "Segoe UI", "Ubuntu", "Cantarell", sans-serif;
+  font-size: 16px;
+  line-height: 1;
+}
+html.linux .caption [data-act="win:min"]::before { content: "\2013"; }
+html.linux .caption [data-act="win:max"]::before { content: "\25A1"; font-size: 13px; }
+html.linux .caption [data-act="win:close"]::before { content: "\00D7"; font-size: 20px; }
+html.linux.maximized .caption [data-act="win:max"]::before {
+  content: "\29C9";
+  font-size: 13px;
+  font-family: "Segoe UI", "Ubuntu", "Cantarell", sans-serif;
+}
+
 .stage {
   flex: 1;
   min-height: 0;

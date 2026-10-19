@@ -1,0 +1,8 @@
+{
+  "name": "calculator",
+  "productName": "Calculator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Unofficial desktop calculator",
+  "main": "main.js"
+}
